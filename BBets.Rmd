@@ -1,7 +1,7 @@
 ---
 title: "Brownlows Bets"
-author: "Your Name"
-date: "Year 2020"
+author: "Adesuwa Mukoro"
+date: "November 12 2020"
 output: 
   html_document:
     number_sections: true
@@ -11,7 +11,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 require(tidyverse)
-require(tidyverse)
+require(tigerstats)
 require(knitr)
 ```
 ### `r as.character(Sys.Date())`
@@ -25,10 +25,38 @@ require(knitr)
 <!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?!-->
 
  At the first day of class there are 35 students in Math Statistics class and professor Brownlow always proposes this bet to his students "I will wager $2 to your bet of $1 that at least two people in today's class have  the same birthday.  He tells me he has made that bet 637 times so far. Where do you think his profits are? Discuss this in a markdown document
-
+There are 3 questions and there should be at least 3 separate commits, at least one dealing with each of the 3 questions.
+1. What are the fair odds for a bet on matching birthdays in a 35 person class.
+2. For what size class is a 2:1 odds bet fair.
+3. How much money would Brownlow be expected to end up with if the bets went as described.
 # Methods
 
 <!--Decide on your methods:  In this section explain the approach you will take to attack the issue --- how will you decide on a likely estimate of professor Brownlow's earnings or losses after 637 bets. Also explain how you construct a 95% confidence interval about your estimate of his winnings !-->
+Will solve this problem by resampling. Will set up days of the year, take a random sample of 35, and see if two or more have the same birthday.
+
+```{r}
+daysYEAR=1:365
+bDAYS=sample(daysYEAR,35,replace=TRUE)
+length(unique(bDAYS))
+```
+
+```{r}
+savebank = vector("numeric")
+for(j in 1:1000){
+bank=0
+for(i in 1:637){
+  class=sample(daysYEAR,35,replace=TRUE)
+  n=length(unique(class))
+  if(n == 35)bank=bank-2
+  else bank =bank +1
+}
+savebank[j]= bank
+}
+hist(savebank)
+```  
+
+  
+The average return is `r mean(savebank)`
 
 
 # Profit Estimate
@@ -40,8 +68,57 @@ require(knitr)
 
 <!--Explain and display your method of coming up with a 95% confidence interval of  professor Brownlows winnings (or losings)-->
 
+```{r}
+sortPROFIT=sort(savebank)
+lcl=sortPROFIT[25]
+UCL=sortPROFIT[975]
+```
 
+95% confidence interval is `r lcl` to `r UCL`
+
+# fair amount dr J should pay
+
+```{r}
+savebank = vector("numeric")
+for(j in 1:50){
+bank=0
+for(i in 1:637){
+  class=sample(daysYEAR,35,replace=TRUE)
+  n=length(unique(class))
+  if(n == 35)bank=bank-4.5
+  else bank =bank +1
+}
+savebank[j]= bank
+}
+hist(savebank)
+f=favstats(savebank)
+```  
+
+fair payout is `r 4.5`
+
+# class size for 2 :1 to be a fair bet
+```{r}
+savebank = vector("numeric")
+classsize=28
+for(j in 1:50){
+bank=0
+for(i in 1:637){
+  class=sample(daysYEAR,classsize,replace=TRUE)
+  n=length(unique(class))
+  if(n == classsize)bank=bank-2
+  else bank =bank +1
+}
+savebank[j]= bank
+}
+hist(savebank)
+```  
+
+  
+classsize for fair payout is 28
+
+  
 # Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If professor Brownlow is consistantly making or losing money how could he change his payout so that his profits center on zero?  Also discuss what size his class should be in order to have his current scheme balance at zero profit.!-->
-
+  
+We used resampling to answer all three questions
